@@ -77,6 +77,10 @@ The core fact: **LLMs cannot reliably distinguish instructions from data.** Any 
 2. Exposure to **untrusted content**
 3. An **outbound communication channel** (email, HTTP, webhook, writing to a shared surface)
 
+<p align="center">
+  <img src="assets/04-lethal-trifecta.png" alt="Venn diagram of three overlapping circles — private data, untrusted input, and can send out — with the small central overlap shaded and labeled Danger" width="420">
+</p>
+
 Break any one leg and exfiltration stops being possible. Most real-world agent vulnerabilities are exactly this pattern — an injected instruction in a document tells the agent to encode private data into a URL and fetch it. Read [Simon Willison's series on prompt injection](https://simonwillison.net/series/prompt-injection/); it's the best continuously-updated source on the topic.
 
 **Practices that actually help**

@@ -20,6 +20,8 @@ An embedding model maps text to a dense vector where semantic similarity approxi
 
 ### 3.2 Chunking, parsing, and index design
 
+![Two document pages compared: fixed-size chunking cuts at even intervals and slices straight through a table, while structural chunking cuts only at content boundaries and leaves the table intact](../assets/03-chunking.png)
+
 Parsing is upstream of everything and is where most quality is lost. PDFs with multi-column layouts, tables, and headers routinely produce garbage text that no retrieval strategy can rescue — inspect your extracted text before touching embeddings. For chunking, start with structure-aware splits (by heading, section, function, or logical record) rather than fixed character counts, keep chunks in the 200–800 token range with modest overlap, and attach metadata (source, title, section path, date, permissions) to every chunk for filtering and citation. **Contextual retrieval** — prepending an LLM-generated sentence situating each chunk in its document — is one of the highest-return upgrades available.
 
 - [Anthropic: Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) — with reported recall improvements and code
@@ -27,6 +29,8 @@ Parsing is upstream of everything and is where most quality is lost. PDFs with m
 - [Docling](https://github.com/docling-project/docling), [Unstructured](https://docs.unstructured.io/), [LlamaParse](https://docs.cloud.llamaindex.ai/llamaparse/getting_started) — document parsing that handles tables and layout
 
 ### 3.3 Hybrid search and reranking
+
+![A query fans out to BM25 and vector search in parallel, both feeding a fusion step that produces roughly 50 candidates, which a reranker narrows to about 8 before they reach the LLM](../assets/03-hybrid-retrieval.png)
 
 Dense retrieval is weak exactly where enterprise queries live: exact identifiers, error codes, product SKUs, rare proper nouns, acronyms. Lexical search (BM25) nails those and misses paraphrase. **Run both and fuse** — Reciprocal Rank Fusion is a three-line, tuning-free merge that reliably beats either alone. Then **rerank**: retrieve 50–100 candidates cheaply, pass them through a cross-encoder that scores each against the query jointly, and keep the top 5–10. Reranking is usually the largest single quality jump per hour of engineering in the whole pipeline.
 
@@ -43,6 +47,8 @@ The user's raw question is rarely the best search query. Techniques that pay for
 - [LlamaIndex: query transformations & routers](https://docs.llamaindex.ai/en/stable/optimizing/advanced_retrieval/query_transformations/)
 
 ### 3.5 RAG evaluation and failure modes
+
+![A query passes through a retrieval stage measured by recall@k and a generation stage measured by faithfulness before producing a wrong answer, with a bracket underneath marking that the two stages must be measured separately](../assets/03-failure-split.png)
 
 Evaluate the two stages separately or you will optimize blind.
 

@@ -12,6 +12,10 @@ Agents are where AI systems stop being request/response and start being software
 
 ### 4.1 Tool calling and the agent loop
 
+<p align="center">
+  <img src="../assets/04-agent-loop.png" alt="A cycle from Model to Tool call to Your code to Result and back to Model, with 'you execute' at the center and an exit arrow from Model to Answer" width="440">
+</p>
+
 The primitive: you describe tools as JSON Schemas, the model returns a structured call, **you** execute it, and you feed the result back. Loop until the model answers or a limit trips. The model never executes anything — that boundary is where all your control lives. Tool design *is* prompt engineering: names and descriptions are read by the model, so `search_orders(customer_id, status)` with a clear description beats a generic `query(sql)` every time. Return errors as informative text the model can act on ("no customer with that ID; try search_customers by email") rather than raising — recoverable errors are how agents self-correct. Keep tool result payloads small; a tool that dumps 40K tokens of JSON destroys the context budget.
 
 - [Anthropic: Tool use overview](https://docs.claude.com/en/docs/agents-and-tools/tool-use/overview)
@@ -19,6 +23,8 @@ The primitive: you describe tools as JSON Schemas, the model returns a structure
 - [ReAct: Synergizing Reasoning and Acting](https://arxiv.org/abs/2210.03629) — the reason/act interleaving pattern
 
 ### 4.2 Agent architectures: workflows vs. agents
+
+![Left: a workflow as three boxes on a fixed left-to-right path. Right: an agent as a central model box with two-way arrows to three surrounding tools, where the model decides the order](../assets/04-workflow-vs-agent.png)
 
 The most important design decision is whether you need an agent at all. **Workflows** have LLM calls on predefined paths — prompt chaining, routing, parallelization, orchestrator-worker, evaluator-optimizer. They're predictable, cheap, testable, and debuggable. **Agents** let the model direct its own control flow and tool use — necessary when the number of steps can't be known ahead of time, and worth the cost only then. Start with the simplest composition that works, add autonomy only where open-endedness demands it, and reach for **multi-agent** structures only when subtasks are genuinely parallel and context-isolable; every handoff loses information and multiplies token spend.
 
@@ -52,6 +58,10 @@ Non-negotiables before an agent touches production:
 - **Least privilege** — scope credentials per tool. An agent with a read-only key can't drop a table no matter what a malicious document tells it.
 - **Durability** — for long runs, persist state so a crash resumes instead of restarting. Durable-execution engines (Temporal, Inngest, Restate) fit this well.
 - **Full traces** — every prompt, tool call, and result logged. See [Module 05](../05-evaluation-and-observability/README.md).
+
+<p align="center">
+  <img src="../assets/04-lethal-trifecta.png" alt="Venn diagram of three overlapping circles — private data, untrusted input, and can send out — with the small central overlap shaded and labeled Danger" width="420">
+</p>
 
 Watch for the **lethal trifecta**: private data access + exposure to untrusted content + an outbound communication channel. Any agent with all three can be made to exfiltrate data by a prompt injection hidden in a document, web page, or issue comment. Break one leg of the triangle.
 
