@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+.AppleDouble
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Python (for module projects)
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Node (for module projects)
+node_modules/
+dist/
+*.log
+
+# Local eval/trace output
+*.sqlite
+*.db
+traces/
+.cache/
