@@ -12,6 +12,8 @@ Almost every production LLM bug traces back to a fundamentals gap. Truncated out
 
 ### 1.1 Transformers and the attention mechanism
 
+![Five token boxes in a row with a dashed sixth box; curved arrows run from the sixth box back to every previous token](../assets/01-attention.png)
+
 A decoder-only transformer predicts the next token by letting each position attend to all previous positions. Stack that ~30–100 times with feed-forward layers in between and you get an LLM. The parts worth internalizing: self-attention is *quadratic* in sequence length (why long context is expensive), the model is *stateless* between calls (why you resend the whole conversation every turn), and generation is *autoregressive* (why output tokens cost more latency than input tokens).
 
 - [Attention Is All You Need](https://arxiv.org/abs/1706.03762) — the original paper; skim §3
@@ -19,6 +21,8 @@ A decoder-only transformer predicts the next token by letting each position atte
 - [Karpathy: Let's build GPT from scratch](https://www.youtube.com/watch?v=kCc8FmEb1nY) — 2 hours, the single highest-leverage resource here
 
 ### 1.2 Tokenization and the context window
+
+![A single bar split into System, Context, History and Output segments; brackets mark the context window across the whole bar, input across the first three segments, and the output cap across the last](../assets/01-context-budget.png)
 
 Models see tokens, not characters or words. Byte-pair encoding merges frequent character sequences, so English prose runs ~4 chars/token while code, JSON, non-Latin scripts, and long numbers are far less efficient. Three separate limits matter and get conflated constantly: **context window** (input + output combined), **max output tokens** (usually much smaller), and **effective** context — the point past which recall degrades even though the model technically accepts more.
 
@@ -35,6 +39,8 @@ Pretraining on a large corpus produces a next-token predictor with broad knowled
 - [Constitutional AI](https://arxiv.org/abs/2212.08073) — AI feedback instead of human labels for harmlessness
 
 ### 1.4 Inference and decoding: sampling params, KV cache, streaming
+
+![A timeline showing a solid Prefill block reading input, a dashed line marking TTFT, then individual token squares emitted one at a time while writing output](../assets/01-latency-anatomy.png)
 
 At each step the model outputs a probability distribution over the vocabulary; decoding parameters shape how you sample from it. `temperature` flattens or sharpens the distribution; `top_p` truncates it to the smallest set summing to *p*. Tune one, not both. The **KV cache** stores attention keys/values for tokens already processed so each new token is O(1) rather than O(n) — it's also why prompt caching works and why long conversations eat GPU memory. Latency decomposes into **TTFT** (time to first token, dominated by input length) and **TPOT/ITL** (per-output-token time). Streaming doesn't make generation faster; it makes TTFT the number the user feels.
 

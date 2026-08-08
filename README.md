@@ -2,6 +2,8 @@
 
 A structured, opinionated curriculum for software engineers moving into AI/ML engineering — the discipline that separates someone who can call an LLM API from someone who can design, evaluate, ship, and operate AI systems that hold up in production. It's built as plain markdown: seven modules from foundations to frontier, each with canonical resources, the tools actually used in industry, a hands-on project, and the pitfalls that bite people first. I'm writing it as I learn (publicly, mistakes included), and it's open for anyone making the same transition — self-taught devs, backend/full-stack engineers adding AI to their scope, and new grads who want depth beyond "I used the OpenAI SDK once."
 
+![Learning path: seven numbered modules ascending from Fundamentals to Frontier, ending at the Capstone](assets/00-curriculum-path.png)
+
 > **Last reviewed:** August 2026 · See [hot-topics.md](hot-topics.md) for what's moving fast vs. what's settled.
 
 ---
@@ -23,6 +25,12 @@ A structured, opinionated curriculum for software engineers moving into AI/ML en
 - [hot-topics.md](hot-topics.md) — what changed in the last 6–12 months vs. stable fundamentals
 - [soft-skills.md](soft-skills.md) — reviewing AI-generated code, cost/latency tradeoffs, security awareness, communicating limitations
 - [capstone.md](capstone.md) — the final project that combines every module
+
+<p align="center">
+  <img src="assets/00-system-anatomy.png" alt="An LLM call at the center, surrounded by retrieval, tools, evals, tracing, guardrails, and cost limits — all enclosed by a dashed circle labeled 'The engineering'" width="470">
+</p>
+
+<p align="center"><em>Calling the model is the small box in the middle. This repo is about everything around it.</em></p>
 
 ---
 
@@ -94,6 +102,10 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
 ---
 
 ## How to Use This Repo
+
+<p align="center">
+  <img src="assets/00-learning-loop.png" alt="A four-step loop: Read, Build, Measure, Write down — with the Measure to Write down step highlighted" width="400">
+</p>
 
 1. **Go in order, but don't gold-plate.** Modules 01–03 are prerequisites for everything else. 04–06 can be taken in any order once you have them.
 2. **Build the project before ticking the boxes.** Every module ends with one deliverable. Reading about reranking teaches you nothing; watching recall@10 jump from 0.61 to 0.88 teaches you the whole module.
