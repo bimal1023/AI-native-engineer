@@ -12,6 +12,8 @@ The valuable skill isn't knowing today's frontier; it's having a repeatable proc
 
 ### 7.1 Reasoning models and test-time compute
 
+![A chart of accuracy against thinking tokens: accuracy rises steeply then plateaus while cost climbs in a straight line, with a dashed marker at the plateau labeled stop here](../assets/07-thinking-budget.png)
+
 Models trained with RL to produce long internal reasoning chains before answering — spending compute at inference rather than training time. They substantially improve math, code, planning, and multi-step analysis, and most providers now expose a **thinking budget** so you can trade cost and latency for accuracy per request. The engineering implications: reasoning tokens are billed as output and can dwarf the visible answer; TTFT gets much worse, so streaming UX needs rethinking (show the model is working, or show summarized reasoning); explicit chain-of-thought prompting becomes redundant or harmful; and for extraction, routing, and formatting, reasoning models are usually the wrong tool. Route per task, not per product.
 
 - [Scaling LLM Test-Time Compute Optimally](https://arxiv.org/abs/2408.03314)
@@ -28,6 +30,8 @@ The fastest-moving applied area, and the one most likely to change your own dail
 
 ### 7.3 Protocols and interoperability
 
+![Before: every app wired directly to every tool in a dense tangle of connections. After: every app and tool connects only to a single MCP hub in the middle](../assets/07-mcp-hub.png)
+
 **MCP** has become the de-facto standard for connecting models to tools and data — servers exist for most common systems, and the questions have moved from "will this be adopted?" to operational ones: authorization and scoping, server trust and supply chain, tool-name collisions, and how much of a tool catalog you can expose before the model degrades. **A2A (Agent2Agent)** addresses agent-to-agent delegation across organizational boundaries; it's real but earlier. The open problems worth tracking: agent **identity and auth** (an agent acting on a user's behalf needs delegated, scoped, revocable credentials — OAuth wasn't designed for this), and machine-to-machine **payments**. Build behind a thin abstraction; these specs are still moving.
 
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification)
@@ -43,6 +47,8 @@ Vision-language models have made **document AI** genuinely work — feeding page
 - [ColPali: Efficient Document Retrieval with Vision Language Models](https://arxiv.org/abs/2407.01449) — retrieval directly over page images
 
 ### 7.5 Small models, distillation, and on-device
+
+![A large frontier model generates training examples that are used to train a much smaller model, labeled 10 to 50 times cheaper](../assets/07-distillation.png)
 
 The capability floor keeps rising: models in the 1–8B range now handle classification, extraction, routing, and summarization at quality that required frontier models two years ago. That makes **distillation** — using a frontier model to generate training data for a small one you serve yourself — one of the most reliable cost plays available, frequently 10–50× cheaper per token at parity on a narrow task. On-device inference (phones, laptops, edge) matters for privacy-constrained and offline use cases, with quantized GGUF models, Apple Silicon (MLX), and NPU-backed runtimes as the practical stack. The architecture implication: a mature system is a **portfolio** of models routed by task, not one model doing everything.
 

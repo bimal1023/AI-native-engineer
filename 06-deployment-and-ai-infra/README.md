@@ -20,6 +20,8 @@ Serving throughput is a memory problem. **Continuous batching** merges incoming 
 
 ### 6.2 API-layer architecture: gateways, streaming, fallbacks
 
+![An app calling a gateway that holds retry, cache and rate-limit logic, which routes to a primary model and falls back over a dashed path to a secondary model](../assets/06-gateway.png)
+
 Never let application code call a provider SDK directly. Put an **AI gateway** in between — your own thin service or an off-the-shelf one — and centralize: provider routing and fallback, retries with exponential backoff **and jitter**, timeouts, per-tenant rate limiting and budgets, key management, structured logging, and caching. Stream responses over SSE so TTFT is what the user experiences, and make sure your whole stack (load balancer, proxy, framework) supports streaming without buffering — buffering is the classic bug that silently converts a 400 ms TTFT into a 12 s wait. Add **semantic caching** (embed the request, serve a cached response above a similarity threshold) only where stale-but-similar answers are acceptable; exact-match caching is safer and often enough.
 
 - [LiteLLM](https://docs.litellm.ai/) — 100+ providers behind one OpenAI-compatible interface, plus routing and budgets
@@ -27,6 +29,8 @@ Never let application code call a provider SDK directly. Put an **AI gateway** i
 - [Portkey](https://portkey.ai/docs) · [Kong AI Gateway](https://docs.konghq.com/gateway/latest/ai-gateway/) — managed gateway options
 
 ### 6.3 Cost and latency engineering
+
+![A request hits a small model first, then a confidence check; most requests stop there and finish, while only low-confidence ones escalate to a big model before rejoining](../assets/06-cascade.png)
 
 Treat tokens as a first-class budget line. The levers, roughly in order of return:
 
@@ -43,6 +47,8 @@ Measure p50/p95/p99, never the mean; LLM latency distributions have long tails. 
 - [LLM Inference Performance Engineering: Best Practices (Databricks)](https://www.databricks.com/blog/llm-inference-performance-engineering-best-practices)
 
 ### 6.4 Fine-tuning vs. RAG vs. prompting
+
+![Three ascending steps — Prompt, then Retrieval, then Fine-tune — with an arrow running alongside them showing cost and effort rising at each step](../assets/06-decision-ladder.png)
 
 The decision order is almost always: **prompt → retrieval → fine-tune**, and most teams reach for fine-tuning far too early. Fine-tuning teaches *form* — tone, output structure, domain jargon, a narrow classification boundary — it does not reliably teach *facts*, and facts change anyway (that's what retrieval is for). It's worth doing when you have ≥1,000 high-quality examples, a stable task, evals proving prompting has plateaued, and a real cost or latency motive (distilling a frontier model's behaviour into a small one you serve cheaply is the strongest case). **LoRA/QLoRA** make this affordable: train a small number of adapter parameters, serve many adapters on one base model. Budget for the hidden cost — every base-model upgrade means re-training and re-validating.
 

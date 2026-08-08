@@ -12,6 +12,10 @@ Without evals you cannot answer the only questions that matter: did that prompt 
 
 ### 5.1 Eval fundamentals and error analysis
 
+<p align="center">
+  <img src="../assets/05-eval-flywheel.png" alt="A cycle from Production to Error analysis to Eval set to CI gate to Ship and back to Production, with the CI gate highlighted" width="420">
+</p>
+
 Start with **error analysis**, not metrics. Take 50–100 real outputs, read them, and write down what's wrong with each in plain language. Cluster those notes into a failure taxonomy — that taxonomy tells you what to measure and what to fix, in priority order. Then build the eval set: real inputs (not synthetic ones you invented), covering the common path, the known failure clusters, and the edge cases. Prefer cheap deterministic checks wherever they apply — schema validity, regex/keyword presence, numeric tolerance, citation resolution, exact match on extraction fields — and reserve model-graded evaluation for genuinely subjective dimensions. Keep a small **golden set** frozen for regression, and grow a larger set from production traces.
 
 - [Hamel Husain: Your AI product needs evals](https://hamel.dev/blog/posts/evals/) — the canonical practitioner post
@@ -20,6 +24,10 @@ Start with **error analysis**, not metrics. Take 50–100 real outputs, read the
 
 ### 5.2 LLM-as-judge and judge calibration
 
+<p align="center">
+  <img src="../assets/05-judge-calibration.png" alt="A two-by-two grid of judge verdict against human label; the diagonal cells where they agree are checkmarks, the off-diagonal cells where they disagree are crosses" width="380">
+</p>
+
 For open-ended output, use a model as grader — carefully. Rules that matter: give the judge a **specific rubric with a small discrete scale** (binary pass/fail beats 1–10, which produces noise dressed as precision); prefer **pairwise comparison** to absolute scoring when ranking variants; and **calibrate against human labels** — hand-label 50 examples, measure agreement, and iterate on the judge prompt until agreement is ≥80%. An uncalibrated judge is a random number generator with good manners. Known biases: position bias in pairwise setups (randomize order), verbosity bias (longer answers score higher), and self-preference (models favour their own output — use a different model family as judge where you can).
 
 - [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685) — measures the biases directly
@@ -27,6 +35,8 @@ For open-ended output, use a model as grader — carefully. Rules that matter: g
 - [Anthropic: Empirical evaluations guide](https://docs.claude.com/en/docs/test-and-evaluate/develop-tests)
 
 ### 5.3 Tracing, metrics, and OTel GenAI conventions
+
+![A waterfall of nested spans: a full-width Request span containing shorter Retrieve, LLM call and Tool spans, each starting later than the last, above a left-to-right time axis](../assets/05-trace-waterfall.png)
 
 Observability for LLM systems is distributed tracing with extra attributes. A **trace** covers one user request; **spans** cover each LLM call, retrieval, and tool invocation. Every LLM span should carry: model ID and version, prompt ID and version, full input and output, token counts (input/output/cached/reasoning), cost, latency split into TTFT and total, temperature and other params, and stop reason. OpenTelemetry's GenAI semantic conventions standardize these attribute names so you're not locked into one vendor. Then instrument the aggregate dashboards: cost per request, p50/p95/p99 latency, error and timeout rate, cache hit rate, refusal rate, and token spend by feature.
 
