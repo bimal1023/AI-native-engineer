@@ -12,6 +12,10 @@ The industry moved from "prompt engineering" as clever phrasing to **context eng
 
 ### 2.1 Prompt anatomy and instruction following
 
+<p align="center">
+  <img src="../assets/02-prompt-anatomy.png" alt="A vertical stack of prompt sections from System, Tools and Examples at the top down to Retrieved docs and User question, with the top three marked as the cached prefix and an arrow showing stable content above volatile content" width="360">
+</p>
+
 A production prompt has a stable structure: role and task in the system prompt, then background/context, then examples, then the specific request, then explicit output-format instructions. Order matters for two reasons — models attend most reliably to the beginning and end of the window, and a stable prefix is what makes prompt caching pay off. Use clear delimiters (XML tags or markdown fences) to separate instructions from data; this is both a quality and a security boundary. Prefer positive instructions ("respond in ≤3 sentences") over negations ("don't be verbose").
 
 - [Anthropic: Prompt engineering overview](https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview) — the most practical vendor guide
@@ -28,6 +32,8 @@ Few-shot examples teach *format and edge-case handling* far more efficiently tha
 
 ### 2.3 Structured output and schema enforcement
 
+![Flow from Prompt to Model to JSON to a Valid? decision; valid output is accepted, invalid output loops back into the model with the validation error appended](../assets/02-structured-output-loop.png)
+
 Any prompt whose output feeds another system needs a schema, not a hope. Three mechanisms, in increasing order of reliability: prompt-and-parse (fragile), **tool/function calling** with a JSON Schema (good — the model is trained for it), and **constrained decoding**, where the sampler is masked so only grammar-valid tokens can be emitted (strongest). Always validate against your schema on receipt, and always have a retry path that feeds the validation error back to the model. Design schemas so a partial answer is expressible — give the model a `null` or `"insufficient_evidence"` option, or it will invent a value to satisfy a required field.
 
 - [OpenAI: Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs)
@@ -35,6 +41,8 @@ Any prompt whose output feeds another system needs a schema, not a hope. Three m
 - [Instructor](https://python.useinstructor.com/) and [Outlines](https://dottxt-ai.github.io/outlines/) — Pydantic-typed responses and grammar-constrained generation
 
 ### 2.4 Context engineering: assembly, compaction, and caching
+
+![Two rows compared: without compaction the context grows each turn until it overflows the window boundary; with compaction each turn stays the same size, with detail held in an external notes file that is read back in on demand](../assets/02-context-compaction.png)
 
 Context is a budget. Spend it deliberately.
 
