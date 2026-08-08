@@ -133,4 +133,6 @@ Open an issue to discuss anything structural (new modules, reordering) before wr
 
 ---
 
-*Fork it, teach from it, rip out the parts you disagree with.*
+## License
+
+[MIT](LICENSE) — fork it, teach from it, rip out the parts you disagree with. Attribution appreciated but the license only asks you to keep the copyright notice.
