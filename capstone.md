@@ -4,6 +4,8 @@
 
 ## The Brief
 
+![System architecture: a query flows into a central agent that calls tools and draws on a corpus retrieved through hybrid search and reranking, producing an answer — with evals and a CI gate spanning the top and tracing and cost spanning the bottom](assets/08-capstone-architecture.png)
+
 Build a **production-shaped research assistant** over a real document corpus: an agent that plans a multi-step answer, retrieves through a hybrid pipeline with reranking, uses tools, cites everything, runs inside hard budgets, is fully traced, and is defended by an eval suite that gates CI.
 
 The point isn't the feature — plenty of people have built a chatbot over PDFs. The point is everything around it: the measurements, the gates, the failure handling, the cost table, and the security posture. That's the difference the repo exists to teach, and it's what makes this a portfolio piece rather than a demo.
