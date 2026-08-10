@@ -10,6 +10,10 @@ LLM workloads break the assumptions ordinary backend engineering is built on: re
 
 ## Key Subtopics
 
+![Production architecture: a request path from client through API, orchestrator and gateway to the LLM; a middle row of cache, vector DB and Postgres hanging off the orchestrator; a separate ingestion path from object store through queue, worker and embedding into the vector DB; and a traces band spanning everything](../assets/29-full-architecture.png)
+
+*One request path, one ingestion path, joined only at the index — with two of the thirteen boxes actually calling a model.*
+
 ### 6.1 Serving and inference optimization
 
 Serving throughput is a memory problem. **Continuous batching** merges incoming requests into the running batch instead of waiting for a batch to fill, which is the single largest throughput win. **PagedAttention** stores the KV cache in non-contiguous blocks, eliminating the fragmentation that otherwise wastes most of your GPU memory. On top of that: **quantization** (FP8/INT8/INT4) shrinks weights and KV cache to fit bigger models or longer contexts on the same card, at a measurable but often acceptable quality cost; **speculative decoding** uses a small draft model to propose tokens a large model verifies in parallel, cutting latency without changing output distribution; **prefix caching** reuses KV state across requests sharing a prompt prefix. Know the two throughput regimes — TTFT is prefill-bound (compute), inter-token latency is decode-bound (memory bandwidth) — because they're optimized differently.
