@@ -42,6 +42,8 @@ A long-running agent will exceed any context window. You need a memory architect
 
 ### 4.4 Environments and protocols: MCP, sandboxes, computer use
 
+![Left: a model with no access to local docs, a database or an API, answering "I don't know" from stale data. Right: the same sources reached through an MCP server acting as a standardized connector, producing a grounded answer](../assets/04-mcp-context.png)
+
 Agents need somewhere to act. **MCP (Model Context Protocol)** is the emerging open standard for connecting models to tools and data sources over a common interface — write a server once, use it from any MCP-capable client. **Sandboxes** (E2B, Modal, Daytona, or plain containers) give agents a place to run code without touching your infrastructure; assume any code an agent writes is untrusted. **Computer/browser use** — agents driving a GUI or browser via screenshots and synthetic input — unlocks systems with no API, at the cost of speed, reliability, and a much larger attack surface. Agent-to-agent protocols (A2A) are early; interoperability is real but the standards are still moving.
 
 - [Model Context Protocol](https://modelcontextprotocol.io/) — spec, SDKs, reference servers
