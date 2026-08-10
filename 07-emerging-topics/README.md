@@ -34,6 +34,10 @@ The fastest-moving applied area, and the one most likely to change your own dail
 
 **MCP** has become the de-facto standard for connecting models to tools and data — servers exist for most common systems, and the questions have moved from "will this be adopted?" to operational ones: authorization and scoping, server trust and supply chain, tool-name collisions, and how much of a tool catalog you can expose before the model degrades. **A2A (Agent2Agent)** addresses agent-to-agent delegation across organizational boundaries; it's real but earlier. The open problems worth tracking: agent **identity and auth** (an agent acting on a user's behalf needs delegated, scoped, revocable credentials — OAuth wasn't designed for this), and machine-to-machine **payments**. Build behind a thin abstraction; these specs are still moving.
 
+![Left: a model connected to three tools by clean single lines, marked with a checkmark. Right: the same model surrounded by thirty tools in a dense tangle of overlapping connections, marked with an X](../assets/15-tool-catalog.png)
+
+*Connecting everything is not a strategy — tool selection is a model decision, and it degrades as the catalog grows. Curate per agent.*
+
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification)
 - [MCP security best practices](https://modelcontextprotocol.io/specification/draft/basic/security_best_practices)
 - [A2A Protocol](https://a2a-protocol.org/)
