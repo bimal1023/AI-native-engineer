@@ -41,8 +41,13 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
 ### 01 · LLM Fundamentals
 - [ ] Transformers and the attention mechanism
 - [ ] Tokenization and the context window
+- [ ] Embeddings and positional encoding
+- [ ] Architecture variants: dense, MoE, multimodal
 - [ ] The training lifecycle: pretraining → SFT → preference tuning
 - [ ] Inference and decoding: sampling params, KV cache, streaming
+- [ ] Why models hallucinate
+- [ ] What LLMs are structurally bad at
+- [ ] Precision, quantization, and model size
 - [ ] Model selection, scaling laws, and reasoning models
 - [ ] **Project:** model bake-off harness
 
