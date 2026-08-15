@@ -22,6 +22,7 @@ A structured, opinionated curriculum for software engineers moving into AI/ML en
 
 **Cross-cutting files**
 
+- [roadmap.md](roadmap.md) — **start here.** Which modules you actually need, in what order, and how to know when you're done
 - [hot-topics.md](hot-topics.md) — what changed in the last 6–12 months vs. stable fundamentals
 - [soft-skills.md](soft-skills.md) — reviewing AI-generated code, cost/latency tradeoffs, security awareness, communicating limitations
 - [capstone.md](capstone.md) — the final project that combines every module
@@ -100,6 +101,7 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
 - [ ] **Project:** capability memo on one emerging area
 
 ### Cross-cutting
+- [ ] [Roadmap](roadmap.md) — path chosen, Levels 1–5 cleared
 - [ ] [Soft skills](soft-skills.md) — all five sections
 - [ ] [Hot topics](hot-topics.md) — reviewed and re-dated
 - [ ] [Capstone](capstone.md) — shipped and written up
@@ -112,6 +114,7 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
   <img src="assets/00-learning-loop.png" alt="A four-step loop: Read, Build, Measure, Write down — with the Measure to Write down step highlighted" width="400">
 </p>
 
+0. **Pick a path first.** [roadmap.md](roadmap.md) tells you which modules you need for your goal and which to skip. Almost nobody should read all seven straight through.
 1. **Go in order, but don't gold-plate.** Modules 01–03 are prerequisites for everything else. 04–06 can be taken in any order once you have them.
 2. **Build the project before ticking the boxes.** Every module ends with one deliverable. Reading about reranking teaches you nothing; watching recall@10 jump from 0.61 to 0.88 teaches you the whole module.
 3. **Write down what broke.** Keep a `notes/` folder with the bugs, the wrong assumptions, and the numbers. That log is the actual portfolio artifact.
