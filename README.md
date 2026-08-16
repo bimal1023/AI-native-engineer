@@ -23,6 +23,7 @@ A structured, opinionated curriculum for software engineers moving into AI/ML en
 **Cross-cutting files**
 
 - [roadmap.md](roadmap.md) — **start here.** Which modules you actually need, in what order, and how to know when you're done
+- [glossary.md](glossary.md) — every term in one place, plus the pairs people confuse
 - [hot-topics.md](hot-topics.md) — what changed in the last 6–12 months vs. stable fundamentals
 - [soft-skills.md](soft-skills.md) — reviewing AI-generated code, cost/latency tradeoffs, security awareness, communicating limitations
 - [capstone.md](capstone.md) — the final project that combines every module
