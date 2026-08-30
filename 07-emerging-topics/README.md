@@ -68,6 +68,44 @@ Two threads worth following even if you never work on safety directly. **Interpr
 - [EU AI Act](https://artificialintelligenceact.eu/) — timelines and obligations by risk tier
 - [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)
 
+### 7.7 Code execution and progressive disclosure
+
+Tool use has a token problem: loading every tool definition into context, then round-tripping one call at a time with every intermediate result passing back through the model, is expensive and degrades tool selection. The emerging answer is to let the model **write code that calls the tools** — MCP servers presented to the agent as a typed API it imports — so filtering, joining, and looping happen inside the execution environment and only the result re-enters context (Anthropic reported one workflow dropping from ~150k to ~2k tokens this way). The same principle applied to instructions is **progressive disclosure**: keep a one-line index in context and load the body on demand — the idea behind Agent Skills, folders of instructions and scripts whose name and description are always present but whose contents are read only when relevant. What it changes for you: your tool layer becomes an API surface to design rather than a prompt to dump, sandboxed execution stops being optional ([Module 04](../04-agents-and-tool-use/README.md#44-environments-and-protocols-mcp-sandboxes-computer-use)), and the dominant failure mode moves from "picked the wrong tool" to "wrote wrong code" — which is at least testable.
+
+- [Executable Code Actions Elicit Better LLM Agents](https://arxiv.org/abs/2402.01030) — the CodeAct result underneath the trend
+- [Anthropic: Code execution with MCP](https://www.anthropic.com/engineering/code-execution-with-mcp) · [Cloudflare: Code Mode](https://blog.cloudflare.com/code-mode/)
+- [Agent Skills](https://docs.claude.com/en/docs/agents-and-tools/agent-skills) — progressive disclosure as a file format
+
+### 7.8 RL environments and agent post-training
+
+Post-training's centre of gravity moved from SFT on human demonstrations to **RL against verifiable rewards (RLVR)**: grade the rollout with a checker — unit tests, exact match, a schema validator, a simulator — instead of a learned preference model, and the reward signal stops being the bottleneck. **GRPO** made the loop cheap by dropping the value network and scoring a group of sampled answers against each other, which is why single-node runs are now routine. The scarce asset is no longer the dataset but the **environment**: a runnable task with a reset, tools the model can call, and a programmatic grader — hence the environment hubs and open environment specs that appeared in 2025. Why an application engineer should care: if your task has an automatic checker, a tuned 4–8B model can beat a frontier model *on that task* at a fraction of the cost, and your eval harness from [Module 05](../05-evaluation-and-observability/README.md) is already most of an environment. Expect **reward hacking** — the policy optimizes the checker, not the task — so keep a human-graded holdout you never train against.
+
+- [DeepSeekMath](https://arxiv.org/abs/2402.03300) — the GRPO paper · [Tulu 3](https://arxiv.org/abs/2411.15124) — RLVR inside an open post-training recipe
+- [verl](https://github.com/volcengine/verl) · [TRL](https://huggingface.co/docs/trl) · [Unsloth](https://docs.unsloth.ai/) — the practical RL stack
+- [Prime Intellect Environments Hub](https://app.primeintellect.ai/dashboard/environments) · [OpenEnv](https://github.com/meta-pytorch/OpenEnv) — environments as shareable artifacts
+
+### 7.9 Long-horizon agents: context rot, memory, and self-improvement
+
+Context windows grew faster than the ability to use them. Measured carefully, accuracy degrades as input length grows even on tasks that fit comfortably inside the limit — **context rot** — and long-horizon failure is usually not a reasoning failure but per-step accuracy compounding: 99% per step is a coin flip over 70 steps. That reframes long-running agents as a reliability problem rather than a capability one. What holds up in practice: keep the working window deliberately small (compaction, note files, sub-agents with isolated context — [02.4](../02-prompting-and-context-engineering/README.md#24-context-engineering-assembly-compaction-and-caching) and [04.3](../04-agents-and-tool-use/README.md#43-memory-and-state-management)); give the agent **durable external memory** it writes and re-reads instead of carrying history forward; and measure **step accuracy across a trajectory**, not just the final answer. The frontier piece is self-improvement — agents that write reusable notes or skills after a task and load them next time. Real gains, and a real way to accumulate confidently-worded garbage if nothing ever prunes the store.
+
+- [Chroma: Context Rot](https://research.trychroma.com/context-rot) — measured degradation as input grows
+- [The Illusion of Diminishing Returns: Measuring Long Horizon Execution in LLMs](https://arxiv.org/abs/2509.09677)
+- [Anthropic: Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+
+---
+
+## Watchlist — Too Early to Build On
+
+Real enough to track, not yet worth architecting around. Each row carries the condition that should promote it into a subtopic above — write that condition down, or you'll re-litigate the same debate every quarter.
+
+| Area | What it is | Promote it when |
+|---|---|---|
+| **Diffusion language models** | Text generated by parallel iterative refinement rather than left-to-right decoding | One matches an autoregressive peer on your task with a latency win you can measure yourself |
+| **Agent payments** | Protocols letting agents transact autonomously on a user's behalf | A payment provider you already use supports it and someone runs it in production |
+| **Agent identity and delegated auth** | Scoped, revocable, auditable credentials for an agent acting as a user — OAuth wasn't designed for this | The spec work lands in your identity provider rather than in a blog post |
+| **Continual / online learning** | Models updated from deployment feedback instead of discrete retrains | Someone publishes a rollback story, not just a gains number |
+| **Sub-quadratic and hybrid architectures** | State-space and hybrid-attention stacks aimed at cheap long context | One ships as a default production model with quality parity at your context length |
+
 ---
 
 ## Tools & Frameworks Used in Industry
@@ -80,6 +118,9 @@ Two threads worth following even if you never work on safety directly. **Interpr
 | Multimodal & realtime | OpenAI Realtime API, [LiveKit Agents](https://docs.livekit.io/agents/), [Pipecat](https://docs.pipecat.ai/), [ColPali](https://github.com/illuin-tech/colpali) |
 | Small / on-device | Ollama, llama.cpp, [MLX](https://ml-explore.github.io/mlx/), Unsloth, [ONNX Runtime](https://onnxruntime.ai/) |
 | Interpretability | [TransformerLens](https://transformerlensorg.github.io/TransformerLens/), [SAELens](https://github.com/jbloomAus/SAELens), [Neuronpedia](https://www.neuronpedia.org/) |
+| Code-execution tool use | MCP servers behind a sandbox ([E2B](https://e2b.dev/), Modal, [Pyodide](https://pyodide.org/)), [Agent Skills](https://docs.claude.com/en/docs/agents-and-tools/agent-skills) |
+| Agent RL & environments | [verl](https://github.com/volcengine/verl), [TRL](https://huggingface.co/docs/trl) (GRPO), Unsloth, [OpenEnv](https://github.com/meta-pytorch/OpenEnv), Prime Intellect Environments Hub |
+| Agent memory | [Letta](https://www.letta.com/), [Mem0](https://mem0.ai/), or plain files in git — start with files |
 
 ---
 
@@ -112,6 +153,9 @@ Pick one subtopic above and produce a decision memo (2 pages max) backed by code
 - **Exposing a huge MCP tool catalog.** Too many tools degrades selection accuracy. Curate what each agent can see.
 - **Fine-tuning a small model before proving prompting has plateaued.** See [Module 06](../06-deployment-and-ai-infra/README.md#64-fine-tuning-vs-rag-vs-prompting).
 - **Deploying computer use broadly.** Wide GUI control plus untrusted content is the largest attack surface in this repo.
+- **Giving an agent a code sandbox without an egress policy.** Code execution turns every tool into a network primitive; scope what the sandbox can reach.
+- **Running RL before you trust the grader.** The reward *is* the spec — a sloppy checker gets optimized exactly as written.
+- **Treating a bigger context window as a memory system.** Accuracy degrades well before the limit; compaction and external memory are the fix.
 - **Undated notes.** Anything you write here needs a date and model versions attached or it becomes misinformation in six months.
 
 ---
@@ -124,6 +168,9 @@ Pick one subtopic above and produce a decision memo (2 pages max) backed by code
 - [ ] 7.4 Multimodal, realtime, and computer use
 - [ ] 7.5 Small models, distillation, and on-device
 - [ ] 7.6 Safety, interpretability, and governance
+- [ ] 7.7 Code execution and progressive disclosure
+- [ ] 7.8 RL environments and agent post-training
+- [ ] 7.9 Long-horizon agents: context rot, memory, and self-improvement
 - [ ] **Project:** capability memo on one emerging area
 
 ---

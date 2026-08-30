@@ -99,6 +99,10 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
 - [ ] Protocols and interoperability
 - [ ] Multimodal, realtime, and computer use
 - [ ] Small models, distillation, and on-device
+- [ ] Safety, interpretability, and governance
+- [ ] Code execution and progressive disclosure
+- [ ] RL environments and agent post-training
+- [ ] Long-horizon agents: context rot, memory, and self-improvement
 - [ ] **Project:** capability memo on one emerging area
 
 ### Cross-cutting

@@ -42,6 +42,8 @@
 
 **Lost in the middle** — measured degradation in recall for content buried mid-context. Put critical instructions near the end.
 
+**Context rot** — accuracy falling off as input length grows, even well inside the advertised window. Why a bigger context window is not a memory system. [§7.9](07-emerging-topics/README.md#79-long-horizon-agents-context-rot-memory-and-self-improvement)
+
 **KV cache** — stored attention keys/values for already-processed tokens, making each new token O(1). Grows with context length and concurrency; often the real memory constraint.
 
 **Prompt caching** — provider-side reuse of a repeated prompt prefix. Up to ~90% off input cost, but only if the prefix is byte-identical. A timestamp at the top of your prompt zeroes it out.
@@ -114,6 +116,10 @@
 
 **Sandbox** — isolated execution for model-generated code. Assume that code is untrusted.
 
+**Code execution tool use ("code mode")** — the agent writes code that calls tools rather than emitting one tool call per turn, so intermediate results stay out of context. [§7.7](07-emerging-topics/README.md#77-code-execution-and-progressive-disclosure)
+
+**Progressive disclosure** — keeping a one-line index of capabilities in context and loading the full instructions only when relevant. The idea behind Agent Skills.
+
 ---
 
 ## Evaluation & Observability
@@ -160,6 +166,14 @@
 
 **LoRA / QLoRA** — training a small number of adapter parameters instead of the full model. Makes fine-tuning affordable and lets you serve many adapters on one base model.
 
+**RLVR (RL from verifiable rewards)** — post-training against a programmatic checker — unit tests, exact match, a schema validator — instead of a learned preference model. [§7.8](07-emerging-topics/README.md#78-rl-environments-and-agent-post-training)
+
+**GRPO (Group Relative Policy Optimization)** — RL without a value network: sample a group of answers per prompt and score them against each other. Cheap enough to run on one node.
+
+**Environment (RL)** — a runnable task with a reset, callable tools, and a programmatic grader. The scarce asset in agent post-training; your eval harness is most of one already.
+
+**Reward hacking** — the policy optimizing the grader rather than the task. The reward *is* the spec, and it gets read literally.
+
 **Batch API** — asynchronous bulk processing at roughly half price, when latency doesn't matter.
 
 ---
@@ -183,6 +197,7 @@ The pairs that actually cause bugs. If you only read one section, read this one.
 | **Authentication** vs **authorization** | Who you are vs what you may do. |
 | **Prompt injection** vs **jailbreak** | Third-party instructions in your data vs the user trying to bypass your rules. |
 | **Hallucination** vs **wrong retrieval** | The model invented it vs you fed it the wrong document. Check the trace before blaming the model. |
+| **RLHF** vs **RLVR** | Graded by a learned preference model vs by a programmatic checker. RLVR only applies where correctness is machine-checkable. |
 | **Reasoning tokens** vs **output tokens** | Hidden thinking is still billed as output, and can be 10× the visible answer. |
 | **`O(1)` hash lookup** — average vs worst | Say "average." Worst case is `O(n)`. |
 
@@ -190,7 +205,7 @@ The pairs that actually cause bugs. If you only read one section, read this one.
 
 ## Acronym Index
 
-AI RMF · BM25 · BPE · CoT · CAP · DPO · GQA · HNSW · HyDE · ITL · KV · LLM · LoRA · MCP · MoE · MQA · MRR · nDCG · OTel · PEFT · QLoRA · RAG · RLHF · RoPE · RRF · SFT · SLO · TPOT · TTFT · vLLM
+AI RMF · BM25 · BPE · CoT · CAP · DPO · GQA · GRPO · HNSW · HyDE · ITL · KV · LLM · LoRA · MCP · MoE · MQA · MRR · nDCG · OTel · PEFT · QLoRA · RAG · RLHF · RLVR · RoPE · RRF · SFT · SLO · TPOT · TTFT · vLLM
 
 ---
 
