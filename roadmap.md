@@ -136,8 +136,9 @@ Straight through 01 → 07, then the [capstone](capstone.md). Two deviations fro
 3. [05](05-evaluation-and-observability/README.md) — "how would you know if it's working?" is asked constantly, and most candidates have no answer.
 4. [06 §6.3](06-deployment-and-ai-infra/README.md#63-cost-and-latency-engineering) — cost and latency reasoning.
 5. [soft-skills §4](soft-skills.md#4-communicating-ai-system-limitations) — explaining limitations is half the interview.
+6. [agentic-system-design.md](agentic-system-design.md) — seven agentic case studies in interview format. Do each cold, with a timer, before reading the reference.
 
-**Prepare specifically:** design a RAG system out loud in 45 minutes. Explain how you'd evaluate it. Explain what you'd do when it returns a wrong answer. Those three questions cover most AI system design rounds.
+**Prepare specifically:** design a RAG system out loud in 45 minutes. Explain how you'd evaluate it. Explain what you'd do when it returns a wrong answer. Then do the same for one agent that takes real actions — the control boundary and the approval gate are what get probed. Those four questions cover most AI system design rounds.
 
 ---
 

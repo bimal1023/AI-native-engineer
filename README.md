@@ -26,6 +26,7 @@ A structured, opinionated curriculum for software engineers moving into AI/ML en
 - [glossary.md](glossary.md) — every term in one place, plus the pairs people confuse
 - [hot-topics.md](hot-topics.md) — what changed in the last 6–12 months vs. stable fundamentals
 - [soft-skills.md](soft-skills.md) — reviewing AI-generated code, cost/latency tradeoffs, security awareness, communicating limitations
+- [agentic-system-design.md](agentic-system-design.md) — interview prep: seven agentic design case studies with flow diagrams, trade-offs, and follow-ups
 - [capstone.md](capstone.md) — the final project that combines every module
 
 <p align="center">
@@ -109,6 +110,7 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
 - [ ] [Roadmap](roadmap.md) — path chosen, Levels 1–5 cleared
 - [ ] [Soft skills](soft-skills.md) — all five sections
 - [ ] [Hot topics](hot-topics.md) — reviewed and re-dated
+- [ ] [Agentic system design](agentic-system-design.md) — all seven cases done cold
 - [ ] [Capstone](capstone.md) — shipped and written up
 
 ---
