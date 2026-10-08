@@ -6,7 +6,7 @@ AI system design rounds now come in two kinds. The RAG question ("design search 
 
 **How to use this file:** do each case cold first — 45-minute timer, out loud, on paper — and only then read the reference design. The reference is one defensible answer, not *the* answer; if yours differs, the question is whether you can defend it. Diagrams are Mermaid, so they render on GitHub and you can fork and edit them.
 
-**Contents:** [Framework](#the-45-minute-framework) · [Workflow or agent?](#first-decision-workflow-or-agent) · [Reference architecture](#reference-architecture) · [Patterns](#pattern-cheat-sheet) · [Back-of-envelope](#back-of-envelope-for-agents) · [Case studies](#case-studies) · [More prompts](#more-prompts-to-practice) · [Rubric](#scoring-rubric) · [Practice plan](#practice-plan)
+**Contents:** [Framework](#the-45-minute-framework) · [Workflow or agent?](#first-decision-workflow-or-agent) · [Reference architecture](#reference-architecture) · [Patterns](#pattern-cheat-sheet) · [Back-of-envelope](#back-of-envelope-for-agents) · [What changed recently](#what-changed-recently) · [Case studies](#case-studies) · [More prompts](#more-prompts-to-practice) · [Rubric](#scoring-rubric) · [Practice plan](#practice-plan)
 
 ---
 
@@ -82,7 +82,7 @@ The boxes worth drawing in almost every answer:
 - **Router** — cheap classification in front of the expensive loop. Most traffic should never reach the agent.
 - **Execution layer** — the code between the model's tool call and the real system. Authorization, argument validation, idempotency keys, and rate limits live here. This is the control boundary: the model never touches a real API directly.
 - **Approval gate** — keyed on *reversibility* and blast radius, never on how confident the model sounds.
-- **State store** — checkpoints so a crash resumes instead of restarting, plus whatever memory the agent deliberately reads and writes. The database is the source of truth, not the transcript.
+- **State store** — checkpoints so a crash resumes instead of restarting, plus whatever memory the agent deliberately reads and writes. The database is the source of truth, not the transcript — and the shape that's winning is an append-only event log the harness can replay ([below](#what-changed-recently)).
 - **Budgets** — steps, wall-clock, and dollars per run, each ending in a structured termination reason.
 - **Observability** — not one box but a layer over all of them: full traces, cost per run, and a sample of production runs flowing back into the eval set ([Module 05](05-evaluation-and-observability/README.md)).
 
@@ -128,6 +128,37 @@ Three things fall out, and each is worth saying in the interview:
 More levers in [§6.3](06-deployment-and-ai-infra/README.md#63-cost-and-latency-engineering) and [soft-skills §2](soft-skills.md#2-cost-and-latency-tradeoffs).
 
 ---
+
+---
+
+## What Changed Recently
+
+> Dated on purpose — this is the first section of the file to expire. **Last updated: October 2026.** Each entry says what it changes about an *answer*, not just what happened.
+
+**MCP went stateless** *(spec revision [2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28/changelog))*. The largest revision since the protocol launched. Protocol-level sessions and the `Mcp-Session-Id` header are gone; so is the `initialize` handshake — every request now carries its own protocol version and client capabilities, and `server/discover` advertises what a server supports. Server-initiated calls are replaced by multi-round-trip requests: the server returns `input_required` and the client retries with the answer. Roots, Sampling and Logging are deprecated on a twelve-month clock. List results carry `ttlMs` and `cacheScope`, and servers *should* return `tools/list` in a deterministic order so client-side prompt caches keep hitting.
+
+> **In an interview:** the tool tier is now an ordinary stateless HTTP service — any replica answers any request, and `Mcp-Method` / `Mcp-Name` headers let a load balancer route without an established conversation. Tracing is in the protocol too (OpenTelemetry `traceparent` in `_meta`). Drawing sticky sessions in front of your tool servers is now the dated answer.
+
+**Brain, hands, and session** *(Anthropic, [April 2026](https://www.anthropic.com/engineering/managed-agents))*. Managed Agents splits an agent into the harness that reasons, the sandboxes and tools that act, and an append-only session log — each behind an interface that assumes little about the others. Containers are disposable: a failure returns to the model as a tool error and a fresh one is provisioned from a standard recipe. Credentials never enter the sandbox; MCP calls route through a proxy that pulls them from a vault. Provisioning containers only on demand reportedly cut p50 time-to-first-token by ~60% and p95 by over 90%.
+
+> **In an interview:** this is the [reference architecture](#reference-architecture) with the state store promoted to an event log, and it answers two questions interviewers like. *How does a crashed run resume?* Replay the log — the harness holds no durable state. *Where do credentials live?* Never in the sandbox; behind a proxy.
+
+**Containment is beating supervision** *(Anthropic, [May 2026](https://www.anthropic.com/engineering/how-we-contain-claude) and [March 2026](https://www.anthropic.com/engineering/claude-code-auto-mode))*. The measured problem with approval gates: users approve about **93%** of permission prompts, so a prompt per action is mostly ritual. Two responses are now shipping. **Bound the blast radius so you can stop asking** — an OS-level sandbox allowing workspace writes and denying network by default cut Claude Code's permission prompts by 84%. And **classify actions instead of prompting** — a transcript classifier that sees only user messages and tool calls, with the agent's own prose stripped out so it cannot argue its way past the gate, plus a cheap first pass and a slower re-check for flagged actions, which cut false positives from 8.5% to 0.4%. Denials return to the agent with a reason, and repeated denials escalate to a human. It isn't free: about 17% of genuinely dangerous actions still got through, usually because the classifier misjudged whether the user's earlier instruction authorized *that* blast radius.
+
+> **In an interview:** when someone pushes on approval fatigue — and they will, in [Case 1](#case-1-support-agent-that-can-issue-refunds) and [Case 4](#case-4-email-and-calendar-assistant) — the current answer is tiering plus containment, not more prompts. Related: an egress allowlist is a capability grant, not a destination filter. An approved domain that accepts user-supplied content is still an exfiltration channel.
+
+**Agent identity moved into the identity provider** *(Microsoft Entra Agent ID, [generally available 2026](https://learn.microsoft.com/en-us/entra/agent-id/whats-new-agent-id))*. Agents get first-class directory identities with owners and sponsors, lifecycle workflows that reassign sponsorship so agents aren't orphaned when their owner leaves, access packages, and Conditional Access policies that distinguish an agent acting **on behalf of** a user from an **autonomous** one running with no user attached.
+
+> **In an interview:** "what identity does the agent act under, who owns it, and what happens when that person leaves?" now has a concrete answer. It's the enterprise form of the rule in [Case 6](#case-6-text-to-sql-analyst-agent) — run as the user, never as a shared superuser — extended to agents that run with nobody attached.
+
+**Memory is part of your authorization policy** *([September 2026](https://arxiv.org/abs/2609.01836))*. In a study of long-running agents that track permissions and revocations in memory, memory writers fabricated authority for up to **50.2%** of unauthorized requests under incremental updates, and executors acted on that false authority in **98.6%** of trials. No attacker is involved — the provenance of a permission is simply washed away as memory is rewritten. Safeguards (requiring a stored permission to trace to a real source event, bounded event sourcing for permission changes) reduced it, and rejected more legitimate actions in exchange.
+
+> **In an interview:** if anything permission-shaped lives in memory, say how it traces back to the event that granted it. "The agent remembers that the user approved this" is not an authorization check.
+
+**Agent security evaluation is standardizing** *(NIST CAISI, [March 2026](https://www.nist.gov/blogs/caisi-research-blog/insights-ai-agent-security-large-scale-red-teaming-competition))*. From a public red-teaming competition — 13 frontier models, 400+ participants, over 250,000 attack attempts — at least one successful hijack was found against **every** model tested. Some attack families transferred across models and scenarios, and attacks built against more robust models transferred down to weaker ones, but not the reverse.
+
+> **In an interview:** "we'd red-team it" needs a shape — a standing injection suite in CI ([AgentDojo](https://arxiv.org/abs/2406.13352)-style), attack success rate reported next to utility, and the working assumption that no model is robust on its own.
+
 
 ## Case Studies
 
@@ -332,7 +363,7 @@ flowchart TD
 - **Reproduce before fixing.** A fix without a local reproduction is a guess. "Cannot reproduce" is a valid and useful output.
 - **The test result is the success signal, not the agent's say-so.** The verification loop is the product; the model is a component inside it.
 - **Block "fixes" that game the check.** Deterministic diff rules reject deleted or skipped tests, loosened assertions, and blanket exception handlers unless explicitly flagged for the reviewer. This is reward hacking at inference time ([§7.8](07-emerging-topics/README.md#78-rl-environments-and-agent-post-training)).
-- **Sandbox with no secrets and egress only to a package mirror.** PR content from outside contributors is untrusted input — a comment in the diff can carry an injection.
+- **Sandbox with no secrets and egress only to a package mirror.** PR content from outside contributors is untrusted input — a comment in the diff can carry an injection. Keep credentials outside the sandbox entirely: route tool calls through a proxy that injects them, so generated code never sees a token ([below](#what-changed-recently)).
 - **Never push to a protected branch, never auto-merge.** Human review is the gate. The agent's job is to make that review cheap: a grounded diagnosis, a minimal diff, and test evidence.
 - **Context strategy over context volume.** A repo map, the failing log, and search tools — not the whole repo in the window ([§7.2](07-emerging-topics/README.md#72-agentic-coding-and-swe-agents)).
 
@@ -410,7 +441,8 @@ flowchart LR
 | Exfiltration via a link or image in a draft | External URLs stripped from generated content; plain-text rendering |
 | Summary field smuggles instructions to the planner | Length caps and typed fields; the planner treats summaries as data in a fixed template; outbound still needs approval |
 | A malicious invite auto-accepted | Auto-accept only from allowlisted domains |
-| Approval fatigue — the user clicks yes to everything | Keep approvals rare (outbound and irreversible only), batch them, show diffs |
+| Approval fatigue — the user clicks yes to everything | Keep approvals rare (outbound and irreversible only), batch them, show diffs. Measured approval rates run ~93%, so treat each added prompt as a tax ([below](#what-changed-recently)) |
+| A remembered "the user approved this" hardens into a standing permission | Stored permissions must trace to a source event; re-confirm instead of trusting memory ([below](#what-changed-recently)) |
 
 **Evaluate it**
 
@@ -525,7 +557,7 @@ flowchart TD
 **Key decisions**
 
 - **A semantic layer beats a better model.** "Revenue" should have one agreed definition, supplied to the model. 2,000 tables won't fit in context, and ambiguous columns produce confident wrong answers.
-- **Authorization in the database, not the prompt.** Queries run under the user's own role so row-level security applies. The agent can never see more than the person asking.
+- **Authorization in the database, not the prompt.** Queries run under the user's own role so row-level security applies. The agent can never see more than the person asking. When the same agent runs on a schedule with nobody attached, it needs its own directory identity and its own grants rather than a borrowed service account ([below](#what-changed-recently)).
 - **Read-only role plus static checks:** parse with a real SQL parser, reject DML and DDL, allowlist schemas, force a `LIMIT`.
 - **Cost guard.** Dry-run to estimate bytes scanned; a careless warehouse query costs real money and minutes.
 - **Show the SQL and the assumptions** — "I read 'last quarter' as Q2 FY26" — so users can catch misreadings.
@@ -696,6 +728,15 @@ What interviewers tend to write down, whether or not the rubric is formal:
 - [Design Patterns for Securing LLM Agents against Prompt Injections](https://arxiv.org/abs/2506.08837) · [CaMeL: Defeating Prompt Injections by Design](https://arxiv.org/abs/2503.18813)
 - [SWE-agent: Agent-Computer Interfaces](https://arxiv.org/abs/2405.15793) — why tool and interface design moves coding-agent results
 - [Chip Huyen: Building a Generative AI Platform](https://huyenchip.com/2024/07/25/genai-platform.html) · [Eugene Yan: Patterns for Building LLM-based Systems](https://eugeneyan.com/writing/llm-patterns/)
+
+Recent, and the basis of [What Changed Recently](#what-changed-recently):
+
+- [MCP specification 2026-07-28 changelog](https://modelcontextprotocol.io/specification/2026-07-28/changelog) — the stateless revision, in the spec's own words
+- [Anthropic: Managed Agents](https://www.anthropic.com/engineering/managed-agents) — brain, hands and session as separable pieces
+- [Anthropic: How we contain Claude](https://www.anthropic.com/engineering/how-we-contain-claude) · [Claude Code auto mode](https://www.anthropic.com/engineering/claude-code-auto-mode) — containment and classifier-based gates, with the numbers
+- [NIST CAISI: insights from a large-scale agent red-teaming competition](https://www.nist.gov/blogs/caisi-research-blog/insights-ai-agent-security-large-scale-red-teaming-competition)
+- [Agent Memory Is a Surface for Endogenous Authorization Laundering](https://arxiv.org/abs/2609.01836) — memory as an authorization surface
+- [Microsoft Entra Agent ID](https://learn.microsoft.com/en-us/entra/agent-id/whats-new-agent-id) — what agent identity looks like once an IdP ships it
 
 ---
 
