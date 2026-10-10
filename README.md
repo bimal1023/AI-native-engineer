@@ -76,6 +76,7 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
 - [ ] Memory and state management
 - [ ] Environments and protocols (MCP, sandboxes, computer use)
 - [ ] Reliability: budgets, retries, human-in-the-loop
+- [ ] Containment: permissions, sandboxes, and the approval surface
 - [ ] **Project:** bounded research agent with durable state
 
 ### 05 · Evaluation & Observability

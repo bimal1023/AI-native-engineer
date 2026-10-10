@@ -56,7 +56,7 @@ Non-negotiables before an agent touches production:
 
 - **Hard budgets** — max steps, max wall-clock, max USD per run. Every agent terminates, always.
 - **Idempotency** — retried tool calls must not double-charge, double-send, or double-write. Idempotency keys on every mutating tool.
-- **Approval gates** — destructive or outward-facing actions (sending email, deleting data, spending money, pushing code) pause for a human unless explicitly pre-authorized.
+- **Approval gates** — destructive or outward-facing actions (sending email, deleting data, spending money, pushing code) pause for a human unless explicitly pre-authorized — but gates decay with frequency, so design to need few of them ([§4.6](#46-containment-permissions-sandboxes-and-the-approval-surface)).
 - **Least privilege** — scope credentials per tool. An agent with a read-only key can't drop a table no matter what a malicious document tells it.
 - **Durability** — for long runs, persist state so a crash resumes instead of restarting. Durable-execution engines (Temporal, Inngest, Restate) fit this well.
 - **Full traces** — every prompt, tool call, and result logged. See [Module 05](../05-evaluation-and-observability/README.md).
@@ -70,6 +70,16 @@ Watch for the **lethal trifecta**: private data access + exposure to untrusted c
 - [Simon Willison: The lethal trifecta](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/)
 - [OWASP Top 10 for LLM Applications](https://genai.owasp.org/llm-top-10/)
 - [Temporal](https://docs.temporal.io/) / [Inngest](https://www.inngest.com/docs) — durable execution for long-running, retry-heavy workflows
+
+### 4.6 Containment: permissions, sandboxes, and the approval surface
+
+Approval gates decay. Telemetry from shipped agent products puts prompt approval rates at around **93%** — past a certain frequency a confirmation dialog stops being a decision and becomes a reflex, which means an approval-heavy design mostly transfers liability rather than preventing harm. The structural answer is **containment**: constrain what the agent *can* do, so that most actions need no permission at all. Think in three layers — the **environment** (sandbox, filesystem scope, egress policy), the **model** (system prompts, classifiers), and **external content** (tools, connectors, MCP servers) — and treat the environment as the only hard boundary, because model-layer defenses are probabilistic and never reach 100%. In practice that means scoping the filesystem to the workspace, denying network by default, keeping credentials out of the sandbox entirely (inject them through a proxy that pulls from a vault, so model-generated code never sees a token), and tiering gates by **reversibility** — reads and in-scope writes flow silently, irreversible and outward-facing actions stop. One subtlety worth internalizing: an **egress allowlist is a capability grant, not a destination filter**. An approved domain that accepts user-supplied content is an exfiltration channel.
+
+Where you can't contain, **classify** — and judge the proposed action, not the agent's explanation of it. A judge that reads the model's own reasoning can be argued around, so strip it and show the judge only the user's instructions and the tool call. Run a cheap first pass with a slower re-check on flagged actions, return denials to the agent as recoverable errors carrying a reason, and escalate to a human after repeated denials. Published numbers for this pattern: an OS-level sandbox cut permission prompts by 84%, two-stage classification cut false positives from 8.5% to 0.4%, and roughly 17% of genuinely dangerous actions still got through. Containment lowers the stakes of being wrong. It doesn't make you right.
+
+- [Anthropic: How we contain Claude](https://www.anthropic.com/engineering/how-we-contain-claude) — blast radius, the three layers, and which custom parts broke
+- [Anthropic: How we built Claude Code auto mode](https://www.anthropic.com/engineering/claude-code-auto-mode) — classifier-based gates, with the false-positive numbers
+- [gVisor](https://gvisor.dev/) · [Firecracker](https://firecracker-microvm.github.io/) — the isolation primitives underneath
 
 ---
 
@@ -119,6 +129,8 @@ Requirements:
 - **Debugging without traces.** Agent failures are emergent across 15 steps; you cannot reconstruct them from logs of the final answer.
 - **Evaluating only the final output.** Trajectory matters — an agent that got the right answer after 18 flailing steps is broken.
 - **Trusting model-generated code without a sandbox.** Assume it's untrusted input, because it partly is.
+- **Confirmation dialogs as a safety strategy.** At ~93% approval rates, a prompt per action is liability transfer, not a control. Contain first, then ask rarely.
+- **Letting the agent argue with the gate.** A reviewer — human or classifier — that reads the agent's own justification can be talked around. Judge the action.
 
 ---
 
@@ -129,6 +141,7 @@ Requirements:
 - [ ] 4.3 Memory and state management
 - [ ] 4.4 Environments and protocols (MCP, sandboxes, computer use)
 - [ ] 4.5 Reliability: budgets, retries, human-in-the-loop
+- [ ] 4.6 Containment: permissions, sandboxes, and the approval surface
 - [ ] **Project:** bounded research agent with durable state
 
 ---
