@@ -68,6 +68,16 @@ Production concerns that are specific to this stack: **pin model versions** — 
 - [Modal](https://modal.com/docs) · [Baseten](https://docs.baseten.co/) · [Together](https://docs.together.ai/) — serverless/managed GPU inference
 - [Ray Serve](https://docs.ray.io/en/latest/serve/index.html) · [KServe](https://kserve.github.io/website/) — self-managed serving on Kubernetes
 
+### 6.6 Multi-tenancy: isolation, quotas, and cost attribution
+
+The moment more than one customer shares your AI stack, you inherit a problem ordinary multi-tenancy doesn't have: **the scarce resource is rented and hard-capped**. Provider rate limits are per-org and per-model, so one tenant's burst becomes everyone else's 429 — and unlike CPU, you can't buy your way out of it in the next five minutes. Design for that explicitly. Give every tenant a **budget and a concurrency slot**, not just a request rate: agent workloads hold a slot for minutes, so admission control matters far more than requests per second. Enforce it in the **gateway** ([§6.2](#62-api-layer-architecture-gateways-streaming-fallbacks)) with per-tenant virtual keys, never in application code where every new service re-implements it slightly differently. Separate the pools by traffic shape — interactive chat, long-running agents, and batch jobs should not draw from the same quota, or a backlog of agent runs will starve the chat box your users are staring at. Keep headroom in reserve for the interactive tier and shed load into a queue for the rest.
+
+Two failure modes deserve naming. **Cross-tenant cache leakage**: an exact-match or semantic cache keyed on prompt text alone will happily serve tenant A's answer to tenant B — namespace every cache, retrieval index, and memory store by tenant, and enforce the filter in the query rather than asking the model to be discreet. **Unattributable spend**: if calls aren't tagged with tenant, feature, and prompt version, you cannot answer "which customer is unprofitable?" — and on usage-based pricing that question *is* the business. Tag at the gateway, aggregate daily, and alert on per-tenant anomalies; a looping agent on one account can burn an org-wide quota before anyone notices. One interaction worth knowing: prompt caching rewards a **shared prefix**, so order prompts with the common system content first and tenant-specific context after, or you'll trade your cache hit rate for your isolation story.
+
+- [LiteLLM: virtual keys, budgets and per-key spend](https://docs.litellm.ai/docs/proxy/virtual_keys) — the reference implementation of gateway-enforced tenancy
+- [Google SRE: Handling overload](https://sre.google/sre-book/handling-overload/) — graceful degradation and fair sharing under a hard ceiling
+- [Anthropic: rate limits](https://docs.claude.com/en/api/rate-limits) — what the per-org ceiling actually looks like
+
 ---
 
 ## Tools & Frameworks Used in Industry
@@ -118,6 +128,8 @@ Requirements:
 - **Assuming prompts port across providers.** They don't, quite. Re-run evals per provider before you rely on failover.
 - **Ignoring cold starts.** Serverless GPU + a 30 GB model = minutes to first request. Keep warm pools.
 - **Sending PII to third-party APIs without checking retention and processing terms.** That's a compliance incident, not a bug.
+- **A response cache shared across tenants.** Keyed on prompt text alone, it will serve one customer's answer to another. Namespace it.
+- **Per-tenant limits enforced in application code.** Every service implements them slightly differently and one of them forgets. Enforce at the gateway.
 
 ---
 
@@ -128,6 +140,7 @@ Requirements:
 - [ ] 6.3 Cost and latency engineering
 - [ ] 6.4 Fine-tuning vs. RAG vs. prompting
 - [ ] 6.5 Reliability and operations
+- [ ] 6.6 Multi-tenancy: isolation, quotas, and cost attribution
 - [ ] **Project:** self-hosted model behind a gateway, load-tested
 
 ---

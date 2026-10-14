@@ -93,6 +93,7 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
 - [ ] Cost and latency engineering
 - [ ] Fine-tuning vs. RAG vs. prompting
 - [ ] Reliability and operations
+- [ ] Multi-tenancy: isolation, quotas, and cost attribution
 - [ ] **Project:** self-hosted model behind a gateway, load-tested
 
 ### 07 · Emerging Topics
