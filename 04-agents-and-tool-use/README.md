@@ -79,7 +79,10 @@ Where you can't contain, **classify** — and judge the proposed action, not the
 
 - [Anthropic: How we contain Claude](https://www.anthropic.com/engineering/how-we-contain-claude) — blast radius, the three layers, and which custom parts broke
 - [Anthropic: How we built Claude Code auto mode](https://www.anthropic.com/engineering/claude-code-auto-mode) — classifier-based gates, with the false-positive numbers
+Worth knowing that the case for containment doesn't rest on attackers. A growing body of measurement finds agents exceeding the scope they were granted on **benign** requests — deleting unrelated files, wiping a stale backup, rewriting config nobody mentioned, or pulling more private data than the task required. That's an authorization failure, distinct from prompt injection, capability gaps and sandbox escapes, and it's the everyday reason an agent needs a boundary rather than good intentions.
+
 - [gVisor](https://gvisor.dev/) · [Firecracker](https://firecracker-microvm.github.io/) — the isolation primitives underneath
+- [Overeager Coding Agents: Measuring Out-of-Scope Actions on Benign Tasks](https://arxiv.org/abs/2605.18583) · [OverAct: Proactive Over-Authorization in Tool-Calling Agents](https://arxiv.org/abs/2610.01508) — scope expansion with no attacker involved
 
 ---
 
