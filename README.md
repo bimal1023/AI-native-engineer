@@ -85,6 +85,7 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
 - [ ] Tracing, metrics, and OTel GenAI conventions
 - [ ] Production feedback loops and CI regression gates
 - [ ] Agent and RAG-specific evaluation
+- [ ] Eval rigor: design, graders, and reporting
 - [ ] **Project:** eval harness wired into CI
 
 ### 06 · Deployment & AI Infra

@@ -66,6 +66,15 @@ Benchmarks like SWE-bench and τ-bench are useful for calibrating expectations a
 - [SWE-bench](https://www.swebench.com/) — realistic agentic coding evaluation
 - [Inspect (UK AI Safety Institute)](https://inspect.aisi.org.uk/) — rigorous, scriptable eval framework
 
+### 5.6 Eval rigor: design, graders, and reporting
+
+[§5.1](#51-eval-fundamentals-and-error-analysis) gets you an eval set; this is what separates one you can trust from one that flatters you. Start by naming which kind you're running: an **observational** eval describes current behaviour, while a **causal** one varies a single factor to test whether an intervention changed anything — most arguments about results are really two people running different kinds. **Measure the construct, not a proxy that's easy to score**: refusal rate rewards blanket refusals, so pair harmful cases with benign ones in the same domain and test both directions, because over-refusal is a failure too. **Preregister** the metrics, comparisons, slices, and what counts as a regression *before* you see results — choosing the analysis afterward is how a flat result becomes a win. Size the set honestly: roughly 100 items is a floor for complex multi-turn evals and nearer 1,000 for simple single-turn ones, run each case several times, and use paired comparisons on identical items rather than comparing two averages.
+
+Then calibrate the grader harder than feels necessary ([§5.2](#52-llm-as-judge-and-judge-calibration) is the starting point, not the finish). Use atomic yes/no criteria that state what *fails* each one; hide design metadata from the grader so it can't infer the expected answer; use a different model family than the one under test; flip pairwise orderings and check for length bias; and fail loudly — flag and exclude items the grader chokes on instead of silently scoring them. Measure agreement with human labels using a **chance-corrected statistic** such as Cohen's kappa, since raw agreement flatters you whenever the classes are imbalanced, and treat human-to-human agreement as the ceiling you're aiming at. Finally, report like you expect to be challenged: confidence intervals rather than a bare headline number, results broken out by slice, corrections for multiple comparisons, and the model versions, prompts, grader version and dates recorded alongside. Never compare scores across configurations — a raw API run and the same model behind a product system prompt are different systems.
+
+- [Anthropic: Building strong safety evaluations](https://www.anthropic.com/research/building-strong-safety-evaluations) — the most complete public write-up of eval methodology, and the source of most of the above
+- [Judging LLM-as-a-Judge](https://arxiv.org/abs/2306.05685) — the grader biases this section defends against, measured
+
 ---
 
 ## Tools & Frameworks Used in Industry
@@ -125,6 +134,7 @@ Requirements:
 - [ ] 5.3 Tracing, metrics, and OTel GenAI conventions
 - [ ] 5.4 Production feedback loops and CI regression gates
 - [ ] 5.5 Agent and RAG-specific evaluation
+- [ ] 5.6 Eval rigor: design, graders, and reporting
 - [ ] **Project:** eval harness wired into CI
 
 ---

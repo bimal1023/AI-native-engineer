@@ -1,6 +1,6 @@
 # Hot Topics vs. Stable Fundamentals
 
-> **Last reviewed:** October 2026 · Review cadence: quarterly · [Back to root](README.md)
+> **Last reviewed:** November 2026 · Review cadence: quarterly · [Back to root](README.md)
 
 Not all of this repo ages at the same rate. Some of it has been true since 2017 and will be true in 2030; some of it changed twice this year. This file tells you where to spend your re-reading time — and, just as importantly, where *not* to.
 
@@ -32,6 +32,8 @@ Not all of this repo ages at the same rate. Some of it has been true since 2017 
 | **Memory as an authorization surface** | [04](04-agents-and-tool-use/README.md#43-memory-and-state-management) | Measured: memory writers fabricated authority for up to half of unauthorized requests, and executors acted on it in 98.6% of trials — with no attacker involved | Anything permission-shaped in memory needs provenance back to the event that granted it |
 | **Agent-stack standardization** | [07](07-emerging-topics/README.md#73-protocols-and-interoperability) | MCP grew an opt-in extension model (Tasks, Apps, Skills over MCP, auth), and agent payments moved to vendor-neutral governance under the Linux Foundation | The building blocks are consolidating under neutral stewardship — less framework churn to track, and Tasks replaces job-queue plumbing you'd otherwise write |
 | **Over-authorization on benign tasks** | [04](04-agents-and-tool-use/README.md#46-containment-permissions-sandboxes-and-the-approval-surface) | Measurement work keeps finding agents exceeding granted scope with no attacker present — deleting unrelated files, over-fetching private data | Reframes containment as an everyday reliability control, not just a defense against injection |
+| **Agent memory architecture** | [04](04-agents-and-tool-use/README.md#43-memory-and-state-management) | Memory is consolidating into a layered design — transcripts, notes, structured representations, a small injected layer — plus an offline pass that corrects and promotes what recurs | Moves memory from "dump it in a vector store" to a system with its own failure modes, costs and upkeep |
+| **Generative UI protocols** | [07](07-emerging-topics/README.md#73-protocols-and-interoperability) | Agents are starting to return declarative UI rather than prose — MCP Apps inline, and Google's A2UI reaching 1.0 in November 2026 | Changes what an agent's "output" is, and adds an interface layer to design and version alongside your tools |
 | **Multimodal document AI & realtime voice** | [07](07-emerging-topics/README.md#74-multimodal-realtime-and-computer-use) | Page-image retrieval competing with text-extraction pipelines; speech-to-speech collapsed the STT→LLM→TTS chain | Rewrites ingestion architecture in [03](03-retrieval-and-rag/README.md) and makes voice agents viable |
 
 ---
