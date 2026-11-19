@@ -61,6 +61,16 @@ Know the canonical failure modes: the chunk was never retrieved; it was retrieve
 - [Seven Failure Points When Engineering a RAG System](https://arxiv.org/abs/2401.05856)
 - [Ragas](https://docs.ragas.io/) — faithfulness, context precision/recall metrics out of the box
 
+### 3.6 Retrieval for agents: search as a tool
+
+Everything above assumes one retrieval pass feeding one generation. Give the same corpus to an agent and the shape changes: **search becomes a tool the model calls, possibly several times**, and retrieval quality turns partly into a tool-design problem ([§4.1](../04-agents-and-tool-use/README.md#41-tool-calling-and-the-agent-loop)). Three things follow. **Budget what comes back** — a search tool that returns 40K tokens of chunks destroys the context window in two calls, so return a compact ranked list (id, title, section, a one-line snippet) and give the agent a second tool to open the few it actually wants. **Return errors it can act on** — "no results; try broader terms or drop the date filter" teaches recovery, an empty array teaches nothing. And **let the model stop**: an agent that searches twelve times doesn't have a reasoning problem, it has a retrieval problem, usually a tool returning near-misses that look promising.
+
+The useful patterns are older than the current wave and worth knowing by name: retrieve **only when the model is uncertain** rather than on every turn; **critique retrieved passages** before using them, discarding the irrelevant ones; **fall back** to a different index or the web when retrieval scores poorly; and **decompose** multi-hop questions into sub-questions retrieved in parallel, which is what deep-research systems do. Measurement changes too — single-query recall@k matters less than whether the agent found the right thing *somewhere in the session*, so score recall across the whole trajectory alongside searches-per-task and reformulation rate ([§5.6](../05-evaluation-and-observability/README.md#56-eval-rigor-design-graders-and-reporting) applies to these numbers as much as any other). What doesn't change: permissions are still filtered in the query, per tenant, never delegated to the model's judgement. And iteration isn't free — each extra round is a full model turn on a context that grows every step, so route the common, well-specified question to the one-shot hybrid+rerank pipeline and spend agentic retrieval on the ambiguous and multi-hop ones.
+
+- [Self-RAG](https://arxiv.org/abs/2310.11511) · [Corrective RAG](https://arxiv.org/abs/2401.15884) — retrieve, critique, re-retrieve
+- [Active Retrieval Augmented Generation](https://arxiv.org/abs/2305.06983) — retrieve on uncertainty rather than on schedule
+- [Agentic RAG: a survey](https://arxiv.org/abs/2501.09136) · [Anthropic: multi-agent research system](https://www.anthropic.com/engineering/built-multi-agent-research-system) — the pattern taxonomy, and one production account of it
+
 ---
 
 ## Tools & Frameworks Used in Industry
@@ -109,6 +119,8 @@ Requirements:
 - **Swapping the embedding model without re-indexing.** Vectors from different models are not comparable; results become subtly, silently wrong.
 - **No freshness strategy.** Deleted and updated source documents must propagate to the index, or you serve confident stale answers.
 - **Answers without citations.** Users can't verify, and you can't debug.
+- **A search tool that returns everything.** Agents pay for every token twice — once to read, once to carry. Return a ranked index and let it open what it needs.
+- **Scoring single-query recall for a system that searches five times.** Measure across the trajectory, or you're grading the wrong unit.
 - **Reaching for RAG when the corpus fits in context** — or when the real problem is a missing database query.
 
 ---
@@ -120,6 +132,7 @@ Requirements:
 - [ ] 3.3 Hybrid search and reranking
 - [ ] 3.4 Query understanding: rewriting, routing, filtering
 - [ ] 3.5 RAG evaluation and failure modes
+- [ ] 3.6 Retrieval for agents: search as a tool
 - [ ] **Project:** cited answers over a real corpus
 
 ---

@@ -96,6 +96,8 @@
 
 **Faithfulness / groundedness** — whether every claim in the answer is supported by retrieved context. A generation metric, measured separately from retrieval.
 
+**Agentic retrieval** — search exposed to a model as a tool it can call repeatedly, rather than a fixed pipeline stage. Changes the unit of measurement from one query to a whole trajectory. [§3.6](03-retrieval-and-rag/README.md#36-retrieval-for-agents-search-as-a-tool)
+
 ---
 
 ## Agents
@@ -120,6 +122,16 @@
 
 **Progressive disclosure** — keeping a one-line index of capabilities in context and loading the full instructions only when relevant. The idea behind Agent Skills.
 
+**Containment** — constraining what an agent *can* do (sandbox, filesystem scope, egress policy) rather than asking permission for each action. The structural alternative to approval fatigue. [§4.6](04-agents-and-tool-use/README.md#46-containment-permissions-sandboxes-and-the-approval-surface)
+
+**Blast radius** — how much damage an action could do if it's wrong. The right axis for deciding what needs approval; model confidence is not.
+
+**Egress allowlist** — the set of network destinations a sandboxed agent may reach. A capability grant, not a filter: an approved domain that accepts user content is still an exfiltration path.
+
+**Over-authorization** — an agent exceeding the scope it was granted on a benign request. An authorization failure, distinct from prompt injection or a sandbox escape.
+
+**Memory consolidation** — an offline pass over an agent's transcripts and notes that corrects errors, merges duplicates, and promotes what recurs. Where most of the quality in a memory system comes from. [§4.3](04-agents-and-tool-use/README.md#43-memory-and-state-management)
+
 ---
 
 ## Evaluation & Observability
@@ -141,6 +153,10 @@
 **Guardrails** — input/output filters running in production. Online evals with teeth.
 
 **Regression gate** — CI failing the build when quality drops below a committed baseline.
+
+**Preregistration** — fixing the metrics, comparisons and regression thresholds before you see results, so the analysis can't be chosen to fit the answer.
+
+**Chance-corrected agreement (Cohen's kappa)** — judge-vs-human agreement adjusted for agreement you'd get at random. Raw agreement flatters you whenever classes are imbalanced. [§5.6](05-evaluation-and-observability/README.md#56-eval-rigor-design-graders-and-reporting)
 
 ---
 
@@ -195,6 +211,7 @@ The pairs that actually cause bugs. If you only read one section, read this one.
 | **Semantic similarity** vs **relevance** | Close in vector space vs actually answers the question. Not the same, which is why reranking exists. |
 | **Retrieval failure** vs **generation failure** | The chunk was never found vs it was found and ignored. Different fixes; measure separately. |
 | **Authentication** vs **authorization** | Who you are vs what you may do. |
+| **Prompt injection** vs **over-authorization** | Someone else's instructions in your data vs the agent exceeding its scope on a perfectly benign request. Only the first needs an attacker. |
 | **Prompt injection** vs **jailbreak** | Third-party instructions in your data vs the user trying to bypass your rules. |
 | **Hallucination** vs **wrong retrieval** | The model invented it vs you fed it the wrong document. Check the trace before blaming the model. |
 | **RLHF** vs **RLVR** | Graded by a learned preference model vs by a programmatic checker. RLVR only applies where correctness is machine-checkable. |
