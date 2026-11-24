@@ -96,6 +96,8 @@
 
 **Faithfulness / groundedness** — whether every claim in the answer is supported by retrieved context. A generation metric, measured separately from retrieval.
 
+**GraphRAG** — building a graph of entities and relationships at index time, with pre-summarized communities, so relational and corpus-wide questions can be answered without a single chunk containing the answer. Expensive to build and to keep fresh. [§3.7](03-retrieval-and-rag/README.md#37-graph-and-structured-retrieval-when-similarity-isnt-the-question)
+
 **Agentic retrieval** — search exposed to a model as a tool it can call repeatedly, rather than a fixed pipeline stage. Changes the unit of measurement from one query to a whole trajectory. [§3.6](03-retrieval-and-rag/README.md#36-retrieval-for-agents-search-as-a-tool)
 
 ---
@@ -211,6 +213,7 @@ The pairs that actually cause bugs. If you only read one section, read this one.
 | **Semantic similarity** vs **relevance** | Close in vector space vs actually answers the question. Not the same, which is why reranking exists. |
 | **Retrieval failure** vs **generation failure** | The chunk was never found vs it was found and ignored. Different fixes; measure separately. |
 | **Authentication** vs **authorization** | Who you are vs what you may do. |
+| **Retrieval** vs **memory** | What the corpus says vs what this agent learned. Retrieval is stateless and shared; memory is per-agent, accumulates, and needs provenance and upkeep. |
 | **Prompt injection** vs **over-authorization** | Someone else's instructions in your data vs the agent exceeding its scope on a perfectly benign request. Only the first needs an attacker. |
 | **Prompt injection** vs **jailbreak** | Third-party instructions in your data vs the user trying to bypass your rules. |
 | **Hallucination** vs **wrong retrieval** | The model invented it vs you fed it the wrong document. Check the trace before blaming the model. |

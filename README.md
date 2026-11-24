@@ -69,6 +69,7 @@ Fork the repo and tick these off as you go. A box is "done" when you can explain
 - [ ] Query understanding: rewriting, routing, filtering
 - [ ] RAG evaluation and failure modes
 - [ ] Retrieval for agents: search as a tool
+- [ ] Graph and structured retrieval
 - [ ] **Project:** cited answers over a real corpus
 
 ### 04 · Agents & Tool Use

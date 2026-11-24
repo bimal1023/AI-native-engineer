@@ -71,6 +71,16 @@ The useful patterns are older than the current wave and worth knowing by name: r
 - [Active Retrieval Augmented Generation](https://arxiv.org/abs/2305.06983) — retrieve on uncertainty rather than on schedule
 - [Agentic RAG: a survey](https://arxiv.org/abs/2501.09136) · [Anthropic: multi-agent research system](https://www.anthropic.com/engineering/built-multi-agent-research-system) — the pattern taxonomy, and one production account of it
 
+### 3.7 Graph and structured retrieval: when similarity isn't the question
+
+Vector and lexical search both answer one question — *what text looks like this?* Plenty of real questions aren't that shape. "Which customers were affected by every incident this quarter?" is relational. "What are the recurring themes across 400 support transcripts?" is global: no single chunk contains the answer, so top-k retrieval cannot find it no matter how good the reranker is. **GraphRAG** attacks both by moving work to index time — an LLM pass extracts entities and relationships into a graph, clusters them into communities, and pre-summarizes each community, so a corpus-level question becomes a map-reduce over summaries rather than a search for passages that don't exist.
+
+The reason it isn't the default is cost, and it's worth being precise about where that cost lands. Indexing is an **LLM pass over the entire corpus**, not an embedding pass — orders of magnitude more expensive to build, and expensive again to keep fresh, since updates ripple through entities and community summaries. Published comparisons also show it buying little on ordinary factoid QA while spending far more tokens per query. So match the method to the question shape, and try the cheaper rungs first: metadata filters and faceted search; **routing to a real query** when the data is already structured ([§3.4](#34-query-understanding-rewriting-routing-filtering) — if it lives in Postgres, stop embedding it and write SQL); **entity linking**, attaching entity IDs to chunks as metadata, which buys much of the relational benefit for a fraction of the build; and only then a full graph. Worth noting the convergence: the wiki-of-linked-pages that agents build incrementally in [§4.3](../04-agents-and-tool-use/README.md#43-memory-and-state-management) is the same structure, discovered from the other direction — precomputed for a corpus versus accumulated by an agent.
+
+- [From Local to Global: A Graph RAG Approach to Query-Focused Summarization](https://arxiv.org/abs/2404.16130) — the original, and clear about which query types it targets
+- [microsoft/graphrag](https://github.com/microsoft/graphrag) · [LightRAG](https://arxiv.org/abs/2410.05779) — the reference implementation, and a cheaper variant
+- [Retrieval-Augmented Generation with Graphs: a survey](https://arxiv.org/abs/2501.00309) — the broader design space
+
 ---
 
 ## Tools & Frameworks Used in Industry
@@ -119,6 +129,8 @@ Requirements:
 - **Swapping the embedding model without re-indexing.** Vectors from different models are not comparable; results become subtly, silently wrong.
 - **No freshness strategy.** Deleted and updated source documents must propagate to the index, or you serve confident stale answers.
 - **Answers without citations.** Users can't verify, and you can't debug.
+- **Building a knowledge graph before trying metadata filters.** Entity IDs attached to chunks answer many relational questions at a fraction of the indexing cost.
+- **Embedding data that already lives in a database.** If the question is relational and the source is structured, write the query.
 - **A search tool that returns everything.** Agents pay for every token twice — once to read, once to carry. Return a ranked index and let it open what it needs.
 - **Scoring single-query recall for a system that searches five times.** Measure across the trajectory, or you're grading the wrong unit.
 - **Reaching for RAG when the corpus fits in context** — or when the real problem is a missing database query.
@@ -133,6 +145,7 @@ Requirements:
 - [ ] 3.4 Query understanding: rewriting, routing, filtering
 - [ ] 3.5 RAG evaluation and failure modes
 - [ ] 3.6 Retrieval for agents: search as a tool
+- [ ] 3.7 Graph and structured retrieval: when similarity isn't the question
 - [ ] **Project:** cited answers over a real corpus
 
 ---
